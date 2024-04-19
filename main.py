@@ -6,13 +6,15 @@ from eth_account.messages import encode_defunct
 from web3 import Web3
 
 if __name__ == '__main__':
+    total = 0
+    print("Подписывайся  https://t.me/maxzarev")
     web3 = Web3(Web3.HTTPProvider('https://eth-mainnet.public.blastapi.io'))
 
     with open('private_keys.txt') as f:
         private_keys = f.read().splitlines()
 
     for private_key in private_keys:
-        account = web3.eth.account.from_key(os.getenv("private_key"))
+        account = web3.eth.account.from_key(private_key)
         timestamp = int(time.time())
 
         message_text = f'Greetings from Avail!\n\nSign this message to check your eligibility. This signature will not cost you any fees.\n\nTimestamp: {timestamp}'
@@ -34,5 +36,10 @@ if __name__ == '__main__':
 
         }
         response = requests.post(post_url, headers=headers, json=data)
-        print(f'{account.address} {response.json()}')
+        if response.json()['message'] == "Not Eligible":
+            print(f'{account.address} Not Eligible')
 
+        elif response.json()['message'] == "Claim":
+            total += response.json()['data']['reward_amount_avail']
+            print(f'{account.address} Claim {response.json()["data"]["reward_amount_avail"]}, Total: {total}')
+    print(f'Total: {total}')
